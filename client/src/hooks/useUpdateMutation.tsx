@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import axiosInstance from '../utils/axiosInstance';
-import useToast from './useToast';
 
 interface UpdateMutationOptions {
   resource: string;
   invalidateKeys?: string[];
   onSuccessMessage?: string;
-  onSucessCallback?: () => void;
+  onSuccessCallback?: () => void;
   method?: string;
   contentType?: string;
 }
@@ -17,9 +17,8 @@ export const useUpdateMutation = ({
   onSuccessMessage,
   method,
   contentType,
-  onSucessCallback,
+  onSuccessCallback,
 }: UpdateMutationOptions) => {
-  const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   contentType = contentType || 'application/json';
@@ -38,17 +37,17 @@ export const useUpdateMutation = ({
       });
 
       if (response.status !== 200) {
-        showToast('Failed to update resource', 'error');
+        message.error('Failed to update resource');
         throw new Error('Failed to update resource');
       }
       return response.data;
     },
     onSuccess: () => {
       if (onSuccessMessage) {
-        showToast(onSuccessMessage, 'success');
+        message.success(onSuccessMessage);
       }
-      if (onSucessCallback) {
-        onSucessCallback();
+      if (onSuccessCallback) {
+        onSuccessCallback();
       }
       queryClient.invalidateQueries({ queryKey: [resource] });
       invalidateKeys?.forEach((key) => {
@@ -56,7 +55,7 @@ export const useUpdateMutation = ({
       });
     },
     onError: () => {
-      showToast('Failed to update resource', 'error');
+      message.error('Failed to update resource');
     },
   });
 };

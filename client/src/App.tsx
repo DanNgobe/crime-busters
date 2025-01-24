@@ -1,23 +1,18 @@
-import { useGetQuery } from './hooks';
-
-type MessagePayload = {
-  message: string;
-};
+import { App as AntApp } from 'antd';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import IncidentMap from './components/IncidentMap';
+import ReportIncident from './components/ReportIncident';
 
 const App = () => {
-  const { data, isError, isLoading } = useGetQuery<MessagePayload>({
-    resource: '',
-  });
-
-  const message = data?.message;
-
   return (
-    <div>
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Error fetching message</p>}
-      {message && <p>The server says: {message}</p>}
-      {!isLoading && !isError && !message && <p>No message yet</p>}
-    </div>
+    <AntApp>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<IncidentMap />} />
+          <Route path="/report" element={<ReportIncident />} />
+        </Routes>
+      </BrowserRouter>
+    </AntApp>
   );
 };
 

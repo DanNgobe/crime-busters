@@ -18,6 +18,23 @@
     <link rel="manifest" href="/manifest.json" />
 
     <style>
+      @keyframes ringAnimation {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.5); /* Grow the ring */
+          opacity: 0.7;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+
+    <style>
       body,
       html,
       #root {

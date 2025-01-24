@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
 import axiosInstance from '../utils/axiosInstance';
-import useToast from './useToast';
 
 interface CreateMutationOptions {
   resource: string;
   invalidateKeys?: string[];
   onSuccessMessage?: string;
-  onSucessCallback?: () => void;
+  onSuccessCallback?: () => void;
   contentType?: string;
 }
 
@@ -15,9 +15,8 @@ export const useCreateMutation = ({
   invalidateKeys,
   contentType,
   onSuccessMessage,
-  onSucessCallback,
+  onSuccessCallback,
 }: CreateMutationOptions) => {
-  const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   contentType = contentType || 'application/json';
@@ -36,17 +35,17 @@ export const useCreateMutation = ({
       );
 
       if (response.status !== 200) {
-        showToast('Failed to create resource', 'error');
+        message.error('Failed to create resource');
         throw new Error('Failed to create resource');
       }
       return response.data;
     },
     onSuccess: () => {
       if (onSuccessMessage) {
-        showToast(onSuccessMessage, 'success');
+        message.success(onSuccessMessage);
       }
-      if (onSucessCallback) {
-        onSucessCallback();
+      if (onSuccessCallback) {
+        onSuccessCallback();
       }
       queryClient.invalidateQueries({ queryKey: [resource] });
       invalidateKeys?.forEach((key) => {
@@ -54,7 +53,7 @@ export const useCreateMutation = ({
       });
     },
     onError: () => {
-      showToast('Failed to create resource', 'error');
+      message.error('Failed to create resource');
     },
   });
 };

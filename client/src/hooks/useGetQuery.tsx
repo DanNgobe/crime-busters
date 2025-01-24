@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../utils/axiosInstance';
-import useToast from './useToast';
+// import useToast from './useToast';
 
 interface QueryOptions {
   resource: string;
@@ -8,7 +8,7 @@ interface QueryOptions {
 }
 
 export const useGetQuery = <T,>({ resource, queryKey }: QueryOptions) => {
-  const { showToast } = useToast();
+  // const { showToast } = useToast();
 
   return useQuery<T>({
     queryKey: [queryKey || resource],
@@ -17,7 +17,7 @@ export const useGetQuery = <T,>({ resource, queryKey }: QueryOptions) => {
         const response = await axiosInstance.get(`/${resource}`);
         return response.data;
       } catch {
-        showToast('Failed to fetch data', 'error');
+        // showToast('Failed to fetch data', 'error');
         throw new Error('Failed to fetch data');
       }
     },
