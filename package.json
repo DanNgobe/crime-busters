@@ -9,6 +9,8 @@
     "build": "cd client && vite build",
     "lint": "cd client && eslint . --fix && cd .. && cd server && eslint . --fix && cd ..",
     "prepare": "husky",
+    "db:migrate": "cd server && node utils/db-utils.js restore backup.sql",
+    "db:backup": "cd server && node utils/db-utils.js backup backup.sql",
     "commitlint": "commitlint --edit"
   },
   "dependencies": {
