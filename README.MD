@@ -31,15 +31,7 @@ npm run dev-server
 To build the client for production, run:
 
 ```bash
-npm run build
-```
-
-## Linting
-
-To lint the code and automatically fix issues, run:
-
-```bash
-npm run lint
+cd client && npm run build
 ```
 
 ## Environment Variables
@@ -47,5 +39,5 @@ npm run lint
 For the client, you need to set the following environment variable:
 
 ```
-VITE_API_URL=<http://server.com>    e.g  http://localhost:3000
+VITE_API_URL=<http://server.com>    e.g  http://localhost:5000
 ```

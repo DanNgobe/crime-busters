@@ -1,33 +1,7 @@
 services:
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: node server/index.js
-    ports:
-      - "4000:4000"
-    volumes:
-      - ./server:/app/server
-    env_file:
-      - .env
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-  client:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: serve -s -l 5000 client/dist
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./client:/app/client
-    env_file:
-      - .env
-
-  mysql:
-    image: mysql:8.0
+  database:
+    image: mariadb:latest
+    container_name: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -40,10 +14,40 @@ services:
       - ./server/backup.sql:/docker-entrypoint-initdb.d/backup.sql
     restart: always
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 10s
       retries: 30
+
+  backend:
+    build: ./server
+    container_name: python-backend
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+    restart: always
+
+  frontend:
+    build: ./client
+    container_name: react-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    restart: always
 
 volumes:
   mysql-data:

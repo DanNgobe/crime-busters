@@ -1,7 +1,7 @@
 {
   "files.exclude": {
     "**/.husky": true,
-    "**/.git**": true,
+    // "**/.git**": true,
     "**/node_modules": true,
     "**/dist": true,
     "**/eslint**": true,
