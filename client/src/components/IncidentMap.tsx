@@ -1,4 +1,4 @@
-import { Badge, Card, Typography } from 'antd';
+import { Badge, Grid, Typography } from 'antd';
 import 'leaflet/dist/leaflet.css';
 import React, { useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet';
@@ -8,6 +8,7 @@ import { Incident } from '../types';
 import createIncidentIcon from '../utils/createIncidentIcon';
 
 const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const urgencyColors: Record<string, string> = {
   low: 'green',
@@ -23,21 +24,28 @@ const IncidentMap: React.FC = () => {
   });
 
   const userLocation = useGeolocation();
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   if (!userLocation) {
     return <Text>Loading your location...</Text>; // Handle loading state
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Card style={{ marginBottom: '16px', textAlign: 'center' }}>
-        <Title level={3}>Incident Reporting Map</Title>
-        <Text>
-          View and manage reported incidents in your area. Click on a pin for more details.
-        </Text>
-      </Card>
+    <div
+      style={{
+        height: isMobile ? '60vh' : '80vh',
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: '20px',
+      }}
+    >
       {userLocation ? (
-        <MapContainer center={userLocation} zoom={10} style={{ height: '100%', width: '100%' }}>
+        <MapContainer
+          center={userLocation}
+          zoom={10}
+          style={{ height: '100%', width: '100%', borderRadius: '20px' }}
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

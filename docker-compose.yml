@@ -1,49 +1,45 @@
 services:
   server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: node server/index.js
+    build: ./server
     ports:
-      - "4000:4000"
-    volumes:
-      - ./server:/app/server
-    env_file:
-      - .env
+      - "5000:5000" # Expose server on port 5000
     depends_on:
-      mysql:
-        condition: service_healthy
+      - db
+    environment:
+      - PORT=5000
+    env_file: .env
+    volumes:
+      - ./server:/app
+      - /app/node_modules
 
   client:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: serve -s -l 5000 client/dist
+    build: ./client
     ports:
-      - "5000:5000"
+      - "3000:3000" # Expose client on port 3000
+    depends_on:
+      - server
+    env_file: .env
     volumes:
-      - ./client:/app/client
-    env_file:
-      - .env
+      - ./client:/app
+      - /app/node_modules
 
-  mysql:
-    image: mysql:8.0
+  db:
+    image: mariadb:latest
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./server/backup.sql:/docker-entrypoint-initdb.d/backup.sql
-    restart: always
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 10s
       retries: 30
 
 volumes:
-  mysql-data:
+  db_data:
