@@ -7,6 +7,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Flex, Grid } from 'antd';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const { useBreakpoint } = Grid;
 const BottomNav: React.FC = () => {
@@ -14,6 +15,7 @@ const BottomNav: React.FC = () => {
   const isMobile = !screens.md;
 
   if (!isMobile) return null;
+  const navigate = useNavigate();
 
   return (
     <div style={navContainerStyle}>
@@ -31,6 +33,7 @@ const BottomNav: React.FC = () => {
           size="large"
           icon={<PlusOutlined />}
           style={centerButtonStyle}
+          onClick={() => navigate('/quick-report')}
         />
 
         {/* Map */}

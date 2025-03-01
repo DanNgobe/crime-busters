@@ -26,25 +26,9 @@ const VoiceIncidentReporter: React.FC = () => {
 
   const [recording, setRecording] = useState(false);
   const [detectedText, setDetectedText] = useState<string | null>(null);
+
   const recognition = new (window.SpeechRecognition ||
     (window as any).webkitSpeechRecognition)();
-
-  useEffect(() => {
-    recognition.continuous = false;
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const text = event.results[0][0].transcript.toLowerCase();
-      setDetectedText(text);
-      console.log("Detected text:", text);
-      processIncident(text);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event);
-    };
-  }, []);
 
   const processIncident = (text: string) => {
     const matchedKeyword = INCIDENT_KEYWORDS.find((keyword) =>
@@ -79,6 +63,30 @@ const VoiceIncidentReporter: React.FC = () => {
       setRecording(true);
     }
   };
+
+  useEffect(() => {
+    recognition.continuous = true; // Allow continuous listening
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      console.log("Speech recognition result:", event);
+      const lastResultIndex = event.results.length - 1;
+      const text = event.results[lastResultIndex][0].transcript.toLowerCase();
+      setDetectedText(text);
+      console.log("Detected text:", text);
+      processIncident(text);
+      console.log("Incident processed");
+    };
+    recognition.onstart = () => {
+      console.log("Speech recognition started...");
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event);
+    };
+  }, []); // Initialize speech recognition once when the component is mounted
+
 
   return (
     <div
