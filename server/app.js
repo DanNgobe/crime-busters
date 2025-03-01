@@ -10,15 +10,17 @@ const db = mysql.createConnection({
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
-  port: process.env.MYSQL_PORT,
+  port: process.env.MYSQL_PORT || 3306,
+  connectTimeout: 10000, // Wait 10s before failing
 });
 
 db.connect((err) => {
   if (err) {
-    console.error('Error connecting to database: ', err);
-    return;
+    console.error('Database connection failed:', err);
+    setTimeout(() => process.exit(1), 5000); // Exit and let Docker restart it
+  } else {
+    console.log('Connected to database');
   }
-  console.log('Connected to database');
 });
 
 const app = express();
