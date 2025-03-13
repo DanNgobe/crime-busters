@@ -1,0 +1,23 @@
+{
+  "files.exclude": {
+    "**/.git**": true,
+    // "**/.env**": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/eslint**": true,
+    "**/**tsconfig**": true,
+    "**/**-lock**": true,
+    "**/**vite**": true,
+    //"**/**package**": true,
+    "**/**coverage**": true,
+    "**/**.prettier**": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

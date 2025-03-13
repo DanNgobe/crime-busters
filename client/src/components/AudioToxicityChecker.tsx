@@ -1,82 +1,125 @@
 import * as toxicity from "@tensorflow-models/toxicity";
 import "@tensorflow/tfjs";
+import { Button, List, Modal, Typography } from "antd";
 import React, { useEffect, useState } from "react";
 
-const AudioToxicityChecker: React.FC = () => {
-  const [recording, setRecording] = useState(false);
+const { Title, Text } = Typography;
+
+const AudioToxicityChecker: React.FC<{
+  isModalOpen: boolean;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ isModalOpen, setIsModalOpen }) => {
+  const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [toxicityResults, setToxicityResults] = useState<string[]>([]);
-  const recognition = new (window.SpeechRecognition ||
-    (window as any).webkitSpeechRecognition)();
-
-  useEffect(() => {
-    recognition.continuous = false;
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const text = event.results[0][0].transcript;
-      setTranscript(text);
-      checkToxicity(text);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event);
-    };
-  }, []);
+  const [toxicLabels, setToxicLabels] = useState<string[]>([]);
 
   const checkToxicity = async (text: string) => {
-    toxicity
-      .load(0.9)
-      .then((model) => {
-        model
-          .classify(text)
-          .then((result) => {
-            const toxicLabels = result
-              .filter((label) => label.results[0].match)
-              .map((label) => label.label);
-            setToxicityResults(toxicLabels);
-          })
-          .catch((error) => {
-            console.error("Toxicity check error:", error);
-          });
-      })
-      .catch((error) => {
-        console.error("Toxicity model load error:", error);
-      });
+    try {
+      //@ts-ignore
+      const model = await toxicity.load(0.9);
+      const result = await model.classify(text);
+      const detectedToxicLabels = result
+        .filter((label) => label.results[0].match)
+        .map((label) => label.label);
+
+      setToxicLabels((prev) => [...prev, ...detectedToxicLabels]);
+      console.log("Toxicity check result:", detectedToxicLabels);
+    } catch (error) {
+      console.error("Toxicity check error:", error);
+    }
   };
 
-  const startRecording = () => {
-    setRecording(true);
-    recognition.start();
-  };
+  useEffect(() => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech Recognition is not supported in your browser.");
+      return;
+    }
 
-  const stopRecording = () => {
-    setRecording(false);
-    recognition.stop();
-  };
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    const handleResult = (event: any) => {
+      let finalTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript + " ";
+          checkToxicity(finalTranscript);
+        }
+      }
+      setTranscript((prev) => prev + finalTranscript);
+    };
+
+    recognition.onresult = handleResult;
+
+    if (listening) {
+      recognition.start();
+    } else {
+      recognition.stop();
+    }
+
+    return () => {
+      recognition.stop();
+    };
+  }, [listening]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">Audio Toxicity Checker</h2>
-      <button
-        className={`p-2 rounded ${
-          recording ? "bg-red-500" : "bg-blue-500"
-        } text-white`}
-        onClick={recording ? stopRecording : startRecording}
+    <>
+      <Modal
+        title="Audio Toxicity Checker"
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={[
+          <Button
+            type={listening ? "default" : "primary"}
+            danger={listening}
+            onClick={() => setListening(!listening)}
+          >
+            {listening ? "Stop Listening" : "Start Listening"}
+          </Button>,
+          <Button key="close" onClick={() => setIsModalOpen(false)}>
+            Close
+          </Button>,
+        ]}
       >
-        {recording ? "Stop Recording" : "Start Recording"}
-      </button>
-      <p className="mt-4">
-        <strong>Transcript:</strong> {transcript || "No transcript yet"}
-      </p>
-      <p className="mt-4">
-        <strong>Toxicity:</strong>{" "}
-        {toxicityResults.length > 0
-          ? toxicityResults.join(", ")
-          : "No toxicity detected"}
-      </p>
-    </div>
+        {toxicLabels.length > 0 && (
+          <div
+            style={{
+              padding: "10px",
+              backgroundColor: "#ffcccc",
+              borderRadius: "5px",
+              marginBottom: "10px",
+            }}
+          >
+            <Title level={5} style={{ color: "red" }}>
+              ⚠️ Warning: Toxicity Detected
+            </Title>
+            <List
+              bordered
+              dataSource={toxicLabels}
+              renderItem={(item) => <List.Item>{item}</List.Item>}
+            />
+          </div>
+        )}
+
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "10px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "5px",
+          }}
+        >
+          <Title level={5}>Transcript:</Title>
+          <Text>{transcript || "Start speaking to see the transcript..."}</Text>
+        </div>
+      </Modal>
+    </>
   );
 };
 

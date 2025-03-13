@@ -36,7 +36,7 @@ services:
       - db_data:/var/lib/mysql
       - ./server/backup.sql:/docker-entrypoint-initdb.d/backup.sql
     ports:
-      - "3306:3306" # Expose database on port 3306
+      - "3307:3306" # Expose database on port 3306
     healthcheck:
       # test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
