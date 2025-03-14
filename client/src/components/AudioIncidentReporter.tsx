@@ -38,7 +38,7 @@ const AudioIncidentReporter: React.FC<{
                   text: `
   You are an AI trained to classify real-world incidents based on speech input.
   Analyze the following statement and determine:
-  1. The **type** of incident (choose from: "Crime", "Fire", "Pothole", "Accident", "Flooding", "Medical Emergency", "Earthquake", "Other").
+  1. The **type** of incident (choose from: "Crime", "Fire", "Pothole", "Accident", "Flooding", "Medical Emergency", "Earthquake", "Other", "None").
   2. The **urgency level** (choose from: "low", "medium", "high", "critical").
   3. A **brief explanation** justifying the classification.
   
@@ -78,6 +78,10 @@ const AudioIncidentReporter: React.FC<{
         // Ensure required fields exist
         if (parsedResponse.incident_type && parsedResponse.urgency) {
           setIncidentDetected(parsedResponse.incident_type);
+          if (parsedResponse.incident_type === "None") {
+            message.info("No incident detected in the speech input");
+            return;
+          }
           reportIncident(createIncidentPayload(parsedResponse));
         } else {
           console.error("Invalid JSON format:", parsedResponse);
@@ -100,6 +104,7 @@ const AudioIncidentReporter: React.FC<{
     type: data.incident_type,
     title: `Detected ${data.incident_type}`,
     description: `Reason: ${data.reason}`,
+    // @ts-ignore
     urgency: data.urgency, // Now dynamically assigned based on AI response
     latitude: userLocation?.[0] ?? 0,
     longitude: userLocation?.[1] ?? 0,

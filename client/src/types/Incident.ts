@@ -6,8 +6,8 @@ export type Incident = {
   description: string;
   latitude: number;
   longitude: number;
-  urgency: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in-progress' | 'resolved';
+  urgency: "low" | "medium" | "high" | "critical";
+  status: "pending" | "in-progress" | "resolved";
   createdAt: string;
   updatedAt: string;
 };
@@ -19,6 +19,6 @@ export type IncidentInput = {
   description: string;
   latitude: number;
   longitude: number;
-  urgency: 'low' | 'medium' | 'high';
-  status: 'pending';
+  urgency: "low" | "medium" | "high" | "critical";
+  status: "pending";
 };
