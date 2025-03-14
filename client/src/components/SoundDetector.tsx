@@ -5,7 +5,7 @@ import React, { useRef, useState } from "react";
 const { Title, Text } = Typography;
 
 const MODEL_URL = "https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1";
-const CLASS_MAP_URL = "yamnet_class_map.csv"; // Ensure this file is accessible
+const CLASS_MAP_URL = "/yamnet_classes.json"; // Ensure this file is accessible
 
 const SoundDetector: React.FC<{
   isModalOpen: boolean;
@@ -60,19 +60,12 @@ const SoundDetector: React.FC<{
       // Load the YAMNet model
       const model = await tf.loadGraphModel(MODEL_URL, { fromTFHub: true });
 
-      // Parse class labels from CSV
+      // Fetch class labels from JSON
       const classResponse = await fetch(CLASS_MAP_URL);
-      const classText = await classResponse.text();
-      const classes = classText
-        .split("\r\n")
-        .slice(1)
-        .map((line) =>
-          line
-            .split(",")
-            .slice(2)
-            .join(",")
-            .replace(/(\/|"|\\)/g, "")
-        );
+      const classJson = await classResponse.json();
+      const classes: string[] = classJson.map(
+        (entry: { index: number; display_name: string }) => entry.display_name
+      );
 
       // Decode audio
       const audioBuffer = await audioBlob.arrayBuffer();
@@ -82,15 +75,19 @@ const SoundDetector: React.FC<{
 
       // Run prediction
       const [scores] = model.predict(waveform) as tf.Tensor[];
-      const top3 = await tf.topk(scores.mean(0), 3, true).indices.array();
+      const top3 = tf.topk(scores.mean(0), 3, true).indices.arraySync();
 
-      // Get class names
-      //@ts-ignore
-      const topClasses = top3.map((i: number) => classes[i]);
+      // Map class indices to class labels
+      const topClasses = Array.isArray(top3)
+        ? (top3 as number[]).map((i: number) => classes[i] || `Unknown (${i})`)
+        : [];
+
+      console.log("Top 3 classes:", topClasses);
       setPredictions(topClasses);
       setLoading(false);
     } catch (error) {
       console.error("Error in classification:", error);
+      setLoading(false);
     }
   };
 
