@@ -16,7 +16,7 @@ services:
   client:
     build: ./client
     ports:
-      - "3000:3000" # Expose client on port 3000
+      - "4000:4000" # Expose client on port 4000
     depends_on:
       - server
     env_file: .env

@@ -1,27 +1,25 @@
-FROM node:20-alpine
+# Step 1: Build the app using pnpm
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml* ./
 
-# Copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install
 
-# Install dependencies using pnpm
-RUN pnpm install
-
-# Copy the rest of the application code
 COPY . .
 
-# Build the project using pnpm (assuming build is defined in package.json)
-RUN pnpm run build
+RUN pnpm build
 
-# Install serve globally
-RUN npm install -g serve
+# Step 2: Serve with Nginx
+FROM nginx:alpine
 
-# Expose the port the app will run on
-EXPOSE 3000
+# Copy the custom Nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Serve the built app
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Copy the built files
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 4000
+
+CMD ["nginx", "-g", "daemon off;"]
