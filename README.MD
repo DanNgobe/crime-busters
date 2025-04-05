@@ -12,18 +12,27 @@ Sound Buster is an AI-powered project designed to listen to environmental cues a
 To get started with the project, clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/DanNgobe/sound-buster.git
-cd sound-buster
-npm install
+git clone https://github.com/DanNgobe/crime-busters.git
+cd crime-busters
+npm install -g pnpm
 ```
 
 ## Development
 
 To start the development server for the client and server, run:
 
+To run the client
+
 ```bash
-npm run dev-client
-npm run dev-server
+pnpm install
+pnpm dev
+```
+
+To run the server
+
+```bash
+pnpm install
+pnpm dev
 ```
 
 ## Building
@@ -31,15 +40,8 @@ npm run dev-server
 To build the client for production, run:
 
 ```bash
-npm run build
-```
-
-## Linting
-
-To lint the code and automatically fix issues, run:
-
-```bash
-npm run lint
+pnpm build
+pnpm preview
 ```
 
 ## Environment Variables
