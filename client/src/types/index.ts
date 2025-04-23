@@ -1,1 +1,1 @@
-export * from './Incident';
+export * from "./database";

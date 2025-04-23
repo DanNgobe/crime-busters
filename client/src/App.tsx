@@ -1,22 +1,50 @@
-import { App as AntApp } from "antd";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import IncidentMap from "./components/IncidentMap";
-import ReportIncident from "./components/ReportIncident";
-import QuickReport from "./components/VoiceIncidentReporter";
+import { useAuth } from "@clerk/clerk-react";
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import Layout from "./components/Layout";
+import LoadingIndicator from "./components/LoadingIndicator";
+import MoveNetDetector from "./components/MoveNetDetector";
+import { useGetQuery } from "./hooks";
 import Dashboard from "./pages/Dashboard";
+import SafetyTipsPage from "./pages/SafetyTips";
+import ToolsPage from "./pages/ToolsPage";
+import UserReportsPage from "./pages/UserReport";
+import { User } from "./types";
 
-const App = () => {
+const App: React.FC = () => {
+  const { isSignedIn, isLoaded, userId } = useAuth();
+  const {
+    data: user,
+    isLoading,
+    isError,
+  } = useGetQuery<User>({
+    resource: `users/${userId}`,
+    queryKey: `users/${userId}`,
+  });
+
+  if (!isLoaded) {
+    return <LoadingIndicator />;
+  }
+
+  if (userId) {
+    localStorage.setItem("onesignalUserId", userId);
+    if (user?.role) {
+      localStorage.setItem("onesignalUserRole", user.role);
+    }
+  }
+
   return (
-    <AntApp>
-      <BrowserRouter>
+    <Router>
+      <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/map" element={<IncidentMap />} />
-          <Route path="/report" element={<ReportIncident />} />
-          <Route path="/quick-report" element={<QuickReport />} />
+          <Route path="/safety-tips" element={<SafetyTipsPage />} />
+          <Route path="/my-reports" element={<UserReportsPage />} />
+          <Route path="/tools" element={<ToolsPage />} />
+          <Route path="/test" element={<MoveNetDetector />} />
         </Routes>
-      </BrowserRouter>
-    </AntApp>
+      </Layout>
+    </Router>
   );
 };
 

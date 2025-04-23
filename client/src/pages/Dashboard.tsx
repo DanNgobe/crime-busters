@@ -1,73 +1,113 @@
-import { Card, Col, Layout, Row, Typography } from "antd";
-import React from "react";
-import BottomNav from "../components/BottomNav";
-import Filters from "../components/FilterButtons";
-import IncidentCard from "../components/IncidentCard";
+import { Report, Shield } from "@mui/icons-material";
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  Chip,
+  Grid,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import React, { useState } from "react";
+import AudioIncidentReporter from "../components/AudioIncidentReporter";
 import IncidentMap from "../components/IncidentMap";
-import { useGetQuery } from "../hooks";
-import { Incident } from "../types";
-
-const { Header, Content, Sider } = Layout;
-const { Title } = Typography;
 
 const Dashboard: React.FC = () => {
-  const { data: incidents } = useGetQuery<Incident[]>({
-    resource: "incidents",
-    queryKey: "incidents",
-  });
+  const theme = useTheme();
 
-  const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
-
-  const filteredIncidents = incidents?.filter(
-    (incident) =>
-      selectedFilters.length === 0 || selectedFilters.includes(incident.type)
-  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header style={{ background: "#fff", padding: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <img
-            src="/logo256.png"
-            alt="Sound Busters"
-            style={{ height: 32, marginLeft: 8 }}
-          />
-          <Title level={4} style={{ margin: 0 }}>
-            Sound Busters
-          </Title>
-        </div>
-      </Header>
+    <Box>
+      <Grid
+        container
+        spacing={3}
+        mb={3}
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card elevation={3} sx={{ display: "flex", flexDirection: "column" }}>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography
+                variant="subtitle1"
+                color="textSecondary"
+                gutterBottom
+              >
+                Total Reports
+              </Typography>
+              <Box display="flex" alignItems="center">
+                <Report color="error" sx={{ fontSize: 40, mr: 2 }} />
+                <Typography variant="h5">58</Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-      <Content style={{ margin: "16px" }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={16}>
-            <IncidentMap />
-          </Col>
-          <Col xs={24} lg={8}>
-            <Filters
-              onFilterChange={(filters) =>
-                setSelectedFilters(filters as string[])
-              }
-            />
-            <Card
-              title="Recent Incidents"
-              style={{ height: "80vh", overflow: "auto" }}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card elevation={3} sx={{ display: "flex", flexDirection: "column" }}>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography
+                variant="subtitle1"
+                color="textSecondary"
+                gutterBottom
+              >
+                Safety Level
+              </Typography>
+              <Box display="flex" alignItems="center">
+                <Shield color="warning" sx={{ fontSize: 40, mr: 2 }} />
+                <Chip label="Moderate" color="warning" size="medium" />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Big Red Report Button */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card
+            elevation={3}
+            sx={{
+              backgroundColor: theme.palette.error.main,
+              color: theme.palette.error.contrastText,
+            }}
+          >
+            <CardActionArea
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                py: 1,
+              }}
+              onClick={() => setIsModalOpen(true)}
             >
-              {filteredIncidents?.map((incident) => (
-                <IncidentCard
-                  key={incident.id}
-                  title={incident.title}
-                  description={incident.description}
-                  status={incident.status}
-                  type={incident.type}
-                />
-              ))}
-            </Card>
-          </Col>
-        </Row>
-      </Content>
-      <BottomNav />
-    </Layout>
+              <Report sx={{ fontSize: 50 }} />
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Report an Incident
+              </Typography>
+            </CardActionArea>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Incident Map */}
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Incidents in Your Area
+        </Typography>
+        <IncidentMap />
+      </Box>
+
+      <AudioIncidentReporter
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
+    </Box>
   );
 };
 

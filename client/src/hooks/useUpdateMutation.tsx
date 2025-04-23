@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
-import axiosInstance from '../utils/axiosInstance';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../context/ToastContext";
+import axiosInstance from "../utils/axiosInstance";
 
 interface UpdateMutationOptions {
   resource: string;
@@ -21,30 +21,31 @@ export const useUpdateMutation = ({
 }: UpdateMutationOptions) => {
   const queryClient = useQueryClient();
 
-  contentType = contentType || 'application/json';
-  const ContentType = contentType === 'empty' ? {} : { 'Content-Type': contentType };
+  contentType = contentType || "application/json";
+  const ContentType =
+    contentType === "empty" ? {} : { "Content-Type": contentType };
+
+  const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (variables: { id: string | number; data?: Record<string, any> }) => {
+    mutationFn: async (variables: {
+      id: string | number;
+      data?: Record<string, any>;
+    }) => {
       const { id, data } = variables;
       const response = await axiosInstance({
-        method: method || 'PUT',
+        method: method || "PUT",
         url: `/${resource}/${id}`,
-        data: contentType === 'application/json' ? JSON.stringify(data) : data,
+        data: contentType === "application/json" ? JSON.stringify(data) : data,
         headers: {
           ...ContentType,
         },
       });
-
-      if (response.status !== 200) {
-        message.error('Failed to update resource');
-        throw new Error('Failed to update resource');
-      }
       return response.data;
     },
     onSuccess: () => {
       if (onSuccessMessage) {
-        message.success(onSuccessMessage);
+        showToast(onSuccessMessage, "success");
       }
       if (onSuccessCallback) {
         onSuccessCallback();
@@ -55,7 +56,7 @@ export const useUpdateMutation = ({
       });
     },
     onError: () => {
-      message.error('Failed to update resource');
+      showToast("Failed to update resource", "error");
     },
   });
 };

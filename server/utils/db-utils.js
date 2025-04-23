@@ -178,7 +178,6 @@ function generateTypeScriptInterfaces(mysqlDumpPath, outputPath) {
   const tables = parseMySQLDump(mysqlDump);
   const tsInterfaces = generateInterfaces(tables);
   const tsInputInterfaces = generateInputInterfaces(tables);
-
   ensureDirectoryExists(outputPath);
   fs.writeFileSync(outputPath, tsInterfaces + tsInputInterfaces);
 }
@@ -214,6 +213,11 @@ const actionHandler = (action, fileName) => {
       }
       console.log('Database restored successfully.');
     });
+  } else if (action === 'just-generate') {
+    // Generate TypeScript interfaces without dumping the database
+    const outputPath = '../client/src/types/database.ts';
+    generateTypeScriptInterfaces(dumpFileName, outputPath);
+    console.log('TypeScript interfaces generated successfully.');
   } else {
     console.error('Invalid action. Please provide "dump" or "restore" as a command line argument.');
   }

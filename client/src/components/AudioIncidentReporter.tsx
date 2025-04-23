@@ -1,10 +1,19 @@
-import { Button, message, Modal, Spin, Typography } from "antd";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { useToast } from "../context/ToastContext";
 import { useCreateMutation } from "../hooks";
 import useGeolocation from "../hooks/useGeolocation";
 import { IncidentInput } from "../types";
-
-const { Title, Text } = Typography;
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const VITE_GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -18,6 +27,9 @@ const AudioIncidentReporter: React.FC<{
   const [incidentDetected, setIncidentDetected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const userLocation = useGeolocation();
+
+  const { showToast } = useToast();
+  const theme = useTheme();
 
   const { mutate: reportIncident } = useCreateMutation({
     resource: "incidents",
@@ -52,7 +64,7 @@ const AudioIncidentReporter: React.FC<{
   Do not include any text outside of the JSON.
   
   Speech Input: "${text}"
-                  `,
+                    `,
                 },
               ],
             },
@@ -62,9 +74,6 @@ const AudioIncidentReporter: React.FC<{
 
       const data = await response.json();
       let responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      console.log("Gemini Raw Response:", responseText);
-
-      // Try to extract JSON if response includes extra text
       let jsonStart = responseText.indexOf("{");
       let jsonEnd = responseText.lastIndexOf("}");
 
@@ -75,11 +84,10 @@ const AudioIncidentReporter: React.FC<{
       try {
         const parsedResponse = JSON.parse(responseText);
 
-        // Ensure required fields exist
         if (parsedResponse.incident_type && parsedResponse.urgency) {
           setIncidentDetected(parsedResponse.incident_type);
           if (parsedResponse.incident_type === "None") {
-            message.info("No incident detected in the speech input");
+            showToast("No incident detected in the speech input", "info");
             return;
           }
           reportIncident(createIncidentPayload(parsedResponse));
@@ -91,7 +99,7 @@ const AudioIncidentReporter: React.FC<{
       }
     } catch (error) {
       console.error("Error classifying speech:", error);
-      message.error("Error communicating with Gemini API");
+      showToast("Error communicating with Gemini API", "error");
     }
     setLoading(false);
   };
@@ -105,7 +113,7 @@ const AudioIncidentReporter: React.FC<{
     title: `Detected ${data.incident_type}`,
     description: `Reason: ${data.reason}`,
     // @ts-ignore
-    urgency: data.urgency, // Now dynamically assigned based on AI response
+    urgency: data.urgency,
     latitude: userLocation?.[0] ?? 0,
     longitude: userLocation?.[1] ?? 0,
     status: "pending",
@@ -135,7 +143,6 @@ const AudioIncidentReporter: React.FC<{
         }
       }
       setTranscript(finalTranscript);
-      // Classify speech here would be be better but we dont have too much gemini credits
     };
 
     recognition.onresult = handleResult;
@@ -153,58 +160,55 @@ const AudioIncidentReporter: React.FC<{
   }, [listening]);
 
   return (
-    <Modal
-      title="Audio Incident Reporter"
-      open={isModalOpen}
-      onCancel={() => setIsModalOpen(false)}
-      footer={[
+    <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} fullWidth>
+      <DialogTitle>Audio Incident Reporter</DialogTitle>
+      <DialogContent>
+        {loading && (
+          <Box display="flex" justifyContent="center" mb={2}>
+            <CircularProgress />
+          </Box>
+        )}
+
+        <Box
+          mb={2}
+          p={2}
+          borderRadius={2}
+          sx={{ backgroundColor: theme.palette.background.paper }}
+        >
+          <Typography variant="h6">Transcript:</Typography>
+          <Typography>
+            {transcript || "Start speaking to see the transcript..."}
+          </Typography>
+        </Box>
+
+        {incidentDetected && (
+          <Box
+            p={2}
+            borderRadius={2}
+            mb={2}
+            sx={{ backgroundColor: theme.palette.error.light }}
+          >
+            <Typography variant="h6" color="error">
+              ⚠️ Incident Detected: {incidentDetected}
+            </Typography>
+            <Typography>
+              An incident of type "{incidentDetected}" was detected and
+              reported.
+            </Typography>
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
         <Button
-          key="start"
-          type={listening ? "default" : "primary"}
-          danger={listening}
+          variant={listening ? "outlined" : "contained"}
+          color={listening ? "error" : "primary"}
           onClick={() => setListening(!listening)}
         >
           {listening ? "Stop Listening" : "Start Listening"}
-        </Button>,
-        <Button key="close" onClick={() => setIsModalOpen(false)}>
-          Close
-        </Button>,
-      ]}
-    >
-      {loading && (
-        <Spin size="large" style={{ display: "block", marginBottom: "10px" }} />
-      )}
-
-      <div
-        style={{
-          marginBottom: "10px",
-          padding: "10px",
-          backgroundColor: "#f5f5f5",
-          borderRadius: "5px",
-        }}
-      >
-        <Title level={5}>Transcript:</Title>
-        <Text>{transcript || "Start speaking to see the transcript..."}</Text>
-      </div>
-
-      {incidentDetected && (
-        <div
-          style={{
-            padding: "10px",
-            backgroundColor: "#ffcccc",
-            borderRadius: "5px",
-            marginBottom: "10px",
-          }}
-        >
-          <Title level={5} style={{ color: "red" }}>
-            ⚠️ Incident Detected: {incidentDetected}
-          </Title>
-          <Text>
-            An incident of type "{incidentDetected}" was detected and reported.
-          </Text>
-        </div>
-      )}
-    </Modal>
+        </Button>
+        <Button onClick={() => setIsModalOpen(false)}>Close</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

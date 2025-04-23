@@ -1,12 +1,12 @@
-import L from 'leaflet';
+import L from "leaflet";
 
 const incidentIcons: Record<string, string> = {
-  Pothole: '/icons/pothole.png',
-  Crime: '/icons/crime.png',
-  Flooding: '/icons/flooding.png',
-  Fire: '/icons/fire.png',
-  Accident: '/icons/accident.png',
-  Other: '/icons/other.png',
+  Pothole: "/icons/pothole.png",
+  Crime: "/icons/crime.png",
+  Flooding: "/icons/flooding.png",
+  Fire: "/icons/fire.png",
+  Accident: "/icons/accident.png",
+  Other: "/icons/other.png",
 };
 
 // Utility to create color-coded icons with urgency background
@@ -27,7 +27,7 @@ const createIncidentIcon = (incidentType: string, urgencyColor: string) =>
     style="width: 25px; height: 25px; z-index: 1;" />
 </div>
       `,
-    className: '', // Prevent default Leaflet styles
+    className: "", // Prevent default Leaflet styles
     iconSize: [40, 40],
     iconAnchor: [20, 40],
   });

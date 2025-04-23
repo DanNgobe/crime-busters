@@ -1,86 +1,91 @@
-import { Badge, Grid, Typography } from 'antd';
-import 'leaflet/dist/leaflet.css';
-import React, { useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet';
-import { useGetQuery } from '../hooks';
-import useGeolocation from '../hooks/useGeolocation';
-import { Incident } from '../types';
-import createIncidentIcon from '../utils/createIncidentIcon';
-
-const { Title, Text } = Typography;
-const { useBreakpoint } = Grid;
-
-const urgencyColors: Record<string, string> = {
-  low: 'green',
-  medium: 'orange',
-  high: 'red',
-};
+import { Box, Chip, Typography, useMediaQuery, useTheme } from "@mui/material";
+import "leaflet/dist/leaflet.css";
+import React, { useState } from "react";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMapEvents,
+} from "react-leaflet";
+import { useGetQuery } from "../hooks";
+import useGeolocation from "../hooks/useGeolocation";
+import { Incident } from "../types";
+import createIncidentIcon from "../utils/createIncidentIcon";
+import {
+  getUrgencyChipColor,
+  getUrgencyColor,
+} from "../utils/getUrgencyColors";
 
 const IncidentMap: React.FC = () => {
   const [visibleMarkers, setVisibleMarkers] = useState(true);
   const { data: incidents } = useGetQuery<Incident[]>({
-    resource: 'incidents',
-    queryKey: 'incidents',
+    resource: "incidents",
+    queryKey: "incidents",
   });
 
   const userLocation = useGeolocation();
-  const screens = useBreakpoint();
-  const isMobile = !screens.md;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   if (!userLocation) {
-    return <Text>Loading your location...</Text>; // Handle loading state
+    return <Typography>Loading your location...</Typography>;
   }
 
   return (
-    <div
-      style={{
-        height: isMobile ? '60vh' : '80vh',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: '20px',
+    <Box
+      sx={{
+        height: isMobile ? "60vh" : "80vh",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 4,
+        overflow: "hidden",
       }}
     >
-      {userLocation ? (
-        <MapContainer
-          center={userLocation}
-          zoom={10}
-          style={{ height: '100%', width: '100%', borderRadius: '20px' }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
+      <MapContainer
+        //@ts-ignore
+        center={userLocation}
+        zoom={10}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          //@ts-ignore
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
 
-          {/* Zoom control logic placed inside the MapContainer */}
-          <MapZoomControl setVisibleMarkers={setVisibleMarkers} />
+        <MapZoomControl setVisibleMarkers={setVisibleMarkers} />
 
-          {visibleMarkers &&
-            incidents?.map((incident) => (
-              <Marker
-                key={incident.id}
-                position={[incident.latitude, incident.longitude]}
-                icon={createIncidentIcon(incident.type, urgencyColors[incident.urgency])}
-              >
-                <Popup>
-                  <Badge
-                    color={urgencyColors[incident.urgency]}
-                    text={`Urgency: ${incident.urgency.toUpperCase()}`}
-                  />
-                  <Title level={5} style={{ marginTop: '8px' }}>
-                    {incident.title}
-                  </Title>
-                  <Text>{incident.description}</Text>
-                  <Text style={{ display: 'block', marginTop: '8px' }}>
-                    <strong>Status:</strong> {incident.status}
-                  </Text>
-                </Popup>
-              </Marker>
-            ))}
-        </MapContainer>
-      ) : (
-        <Text style={{ textAlign: 'center', marginTop: '16px' }}>Loading map...</Text>
-      )}
-    </div>
+        {visibleMarkers &&
+          incidents?.map((incident) => (
+            <Marker
+              key={incident.id}
+              position={[incident.latitude, incident.longitude]}
+              //@ts-ignore
+              icon={createIncidentIcon(
+                incident.type,
+                getUrgencyColor(incident.urgency, theme)
+              )}
+            >
+              <Popup>
+                <Chip
+                  label={`Urgency: ${incident.urgency.toUpperCase()}`}
+                  color={getUrgencyChipColor(incident.urgency)}
+                  size="small"
+                  sx={{ mb: 1 }}
+                />
+                <Typography variant="h6" gutterBottom>
+                  {incident.title}
+                </Typography>
+                <Typography variant="body2">{incident.description}</Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  <strong>Status:</strong> {incident.status}
+                </Typography>
+              </Popup>
+            </Marker>
+          ))}
+      </MapContainer>
+    </Box>
   );
 };
 
