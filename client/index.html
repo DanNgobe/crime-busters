@@ -51,5 +51,25 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script
+      src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      defer
+    ></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function (OneSignal) {
+        await OneSignal.init({
+          appId: "d2967904-48be-494d-943f-4161974e5051",
+          safari_web_id:
+            "web.onesignal.auto.50dac47a-d084-4e57-bf73-88f5ab7beb6e",
+          notifyButton: {
+            enable: true,
+          },
+          allowLocalhostAsSecureOrigin: true,
+        });
+
+        await OneSignal.User.addTag("role", "law-enforcement");
+      });
+    </script>
   </body>
 </html>
