@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/clerk-react";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import RoomIcon from "@mui/icons-material/Room";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -28,70 +29,12 @@ const incidentIcons: Record<string, string> = {
   Other: "/icons/other.png",
 };
 
-// const mockUserReports: Incident[] = [
-//   {
-//     id: 1,
-//     userId: "user-id-123",
-//     type: "Pothole",
-//     title: "Large Pothole on Main St",
-//     description:
-//       "There's a dangerous pothole near the intersection of Main and 5th.",
-//     latitude: -26.2041,
-//     longitude: 28.0473,
-//     urgency: "medium",
-//     status: "pending",
-//     createdAt: "2025-04-19T09:15:00Z",
-//     updatedAt: "2025-04-19T09:15:00Z",
-//   },
-//   {
-//     id: 2,
-//     userId: "user-id-123",
-//     type: "Fire",
-//     title: "Brush Fire Near Park",
-//     description:
-//       "Smoke and small fire visible near the east entrance of the city park.",
-//     latitude: -26.1987,
-//     longitude: 28.0512,
-//     urgency: "high",
-//     status: "in-progress",
-//     createdAt: "2025-04-18T14:30:00Z",
-//     updatedAt: "2025-04-19T10:00:00Z",
-//   },
-//   {
-//     id: 3,
-//     userId: "user-id-123",
-//     type: "Accident",
-//     title: "Two-Car Collision",
-//     description:
-//       "A crash just happened at the corner of Rose Ave and 3rd. No ambulance yet.",
-//     latitude: -26.21,
-//     longitude: 28.045,
-//     urgency: "critical",
-//     status: "resolved",
-//     createdAt: "2025-04-17T07:45:00Z",
-//     updatedAt: "2025-04-17T09:00:00Z",
-//   },
-//   {
-//     id: 4,
-//     userId: "user-id-123",
-//     type: "Other",
-//     title: "Power Lines Down",
-//     description:
-//       "Power lines are hanging low near Maple Street after last night's storm.",
-//     latitude: -26.215,
-//     longitude: 28.0489,
-//     urgency: "high",
-//     status: "pending",
-//     createdAt: "2025-04-20T16:20:00Z",
-//     updatedAt: "2025-04-20T16:20:00Z",
-//   },
-// ];
-
 const UserReportsPage: React.FC = () => {
   const theme = useTheme();
+  const { userId } = useAuth();
 
   const { data, isLoading } = useGetQuery<Incident[]>({
-    resource: "incidents",
+    resource: `incidents/${userId}`,
     queryKey: "user-reports",
   });
 

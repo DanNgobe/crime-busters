@@ -1,5 +1,4 @@
 import { SignIn } from "@clerk/clerk-react";
-import "./auth.css";
 
 const SignInPage: React.FC = () => {
   return (

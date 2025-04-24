@@ -7,22 +7,19 @@ import MoveNetDetector from "./components/MoveNetDetector";
 import { useGetQuery } from "./hooks";
 import Dashboard from "./pages/Dashboard";
 import SafetyTipsPage from "./pages/SafetyTips";
+import SignInPage from "./pages/SignIn";
 import ToolsPage from "./pages/ToolsPage";
 import UserReportsPage from "./pages/UserReport";
 import { User } from "./types";
 
 const App: React.FC = () => {
   const { isSignedIn, isLoaded, userId } = useAuth();
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useGetQuery<User>({
+  const { data: user, isLoading } = useGetQuery<User>({
     resource: `users/${userId}`,
     queryKey: `users/${userId}`,
   });
 
-  if (!isLoaded) {
+  if (!isLoaded || isLoading) {
     return <LoadingIndicator />;
   }
 
@@ -42,6 +39,7 @@ const App: React.FC = () => {
           <Route path="/my-reports" element={<UserReportsPage />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/test" element={<MoveNetDetector />} />
+          <Route path="/sign-in" element={<SignInPage />} />
         </Routes>
       </Layout>
     </Router>

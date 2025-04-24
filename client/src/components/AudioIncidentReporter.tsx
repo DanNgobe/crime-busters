@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/clerk-react";
 import {
   Box,
   Button,
@@ -29,6 +30,7 @@ const AudioIncidentReporter: React.FC<{
   const userLocation = useGeolocation();
 
   const { showToast } = useToast();
+  const { userId } = useAuth();
   const theme = useTheme();
 
   const { mutate: reportIncident } = useCreateMutation({
@@ -112,12 +114,11 @@ const AudioIncidentReporter: React.FC<{
     type: data.incident_type,
     title: `Detected ${data.incident_type}`,
     description: `Reason: ${data.reason}`,
-    // @ts-ignore
     urgency: data.urgency,
     latitude: userLocation?.[0] ?? 0,
     longitude: userLocation?.[1] ?? 0,
     status: "pending",
-    user_id: "user-id-123",
+    userId: userId ?? "",
   });
 
   useEffect(() => {

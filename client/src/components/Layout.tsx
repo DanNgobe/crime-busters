@@ -1,3 +1,4 @@
+import { useAuth, useUser } from "@clerk/clerk-react";
 import {
   AccountCircle,
   Brightness4,
@@ -37,7 +38,8 @@ const drawerWidth = 240;
 const Layout: React.FC<Props> = ({ children, isAdmin = true }) => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useTheme();
-
+  const { user } = useUser();
+  const { signOut } = useAuth();
   return (
     <Box sx={{ display: "flex" }}>
       <AppBar
@@ -145,11 +147,45 @@ const Layout: React.FC<Props> = ({ children, isAdmin = true }) => {
                 alignItems: "center",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <AccountCircle sx={{ mr: 1 }} />
-                <Typography variant="body2">User</Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  if (!user) {
+                    navigate("/sign-in");
+                  }
+                }}
+              >
+                {user?.imageUrl ? (
+                  <Box
+                    component="img"
+                    src={user.imageUrl}
+                    alt="Profile"
+                    sx={{ width: 32, height: 32, borderRadius: "50%", mr: 1 }}
+                  />
+                ) : (
+                  <AccountCircle sx={{ mr: 1 }} />
+                )}
+                <Typography variant="body2">
+                  {user?.firstName || "User"}
+                </Typography>
               </Box>
-              <IconButton size="small" color="inherit">
+              <IconButton
+                size="small"
+                color="inherit"
+                onClick={() => {
+                  if (user) {
+                    signOut();
+                    localStorage.removeItem("onesignalUserId");
+                    localStorage.removeItem("onesignalUserRole");
+                  } else {
+                    navigate("/sign-in");
+                  }
+                }}
+              >
                 <Logout />
               </IconButton>
             </ListItem>
