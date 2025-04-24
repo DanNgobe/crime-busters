@@ -19,7 +19,7 @@ const App: React.FC = () => {
     queryKey: `users/${userId}`,
   });
 
-  if (!isLoaded || isLoading) {
+  if (!isLoaded) {
     return <LoadingIndicator />;
   }
 
