@@ -4,6 +4,10 @@ import express from 'express';
 import mysql from 'mysql2';
 import process from 'process';
 import { camelCaseKeys } from './utils/camelCaseKeys.js';
+
+import PushNotificationService from './push-notifications.js';
+const notificationService = new PushNotificationService();
+
 dotenv.config({
   path: '.env.local',
 });
@@ -78,6 +82,22 @@ app.post('/incidents', (req, res) => {
         res.status(500).json({ message: 'Error creating incident' });
         return;
       }
+      // Send push notification
+      const notification = {
+        heading: title,
+        content: description,
+        segment: 'law-enforcement',
+        filters: [],
+      };
+      notificationService
+        .pushNotification(notification)
+        .then((response) => {
+          console.log('Notification sent:', response);
+        })
+        .catch((error) => {
+          console.error('Error sending notification:', error);
+        });
+      // Return the newly created incident
       res.status(201).json({ id: results.insertId });
     },
   );
@@ -119,6 +139,33 @@ app.get('/users/:userId', (req, res) => {
         });
       });
     }
+  });
+});
+
+app.put('/incidents/:id', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).json({ message: 'Missing required field: status' });
+  }
+
+  const query = `
+    UPDATE incident
+    SET status = ?, updated_at = NOW()
+    WHERE id = ?
+  `;
+
+  db.query(query, [status, id], (err, result) => {
+    if (err) {
+      console.error('Error updating incident: ', err);
+      return res.status(500).json({ message: 'Error updating incident' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Incident not found' });
+    }
+
+    res.status(200).json({ message: 'Incident updated successfully' });
   });
 });
 

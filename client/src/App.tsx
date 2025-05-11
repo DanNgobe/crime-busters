@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import LoadingIndicator from "./components/LoadingIndicator";
 import MoveNetDetector from "./components/MoveNetDetector";
 import { useGetQuery } from "./hooks";
+import AllReportsPage from "./pages/AllReports";
 import Dashboard from "./pages/Dashboard";
 import SafetyTipsPage from "./pages/SafetyTips";
 import SignInPage from "./pages/SignIn";
@@ -37,6 +38,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/safety-tips" element={<SafetyTipsPage />} />
           <Route path="/my-reports" element={<UserReportsPage />} />
+          <Route path="/reports" element={<AllReportsPage />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/test" element={<MoveNetDetector />} />
           <Route path="/sign-in" element={<SignInPage />} />

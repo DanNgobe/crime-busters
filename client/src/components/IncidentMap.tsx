@@ -23,6 +23,9 @@ const IncidentMap: React.FC = () => {
     resource: "incidents",
     queryKey: "incidents",
   });
+  const unresolvedIncidents = incidents?.filter(
+    (incident) => incident.status !== "resolved"
+  );
 
   const userLocation = useGeolocation();
   const theme = useTheme();
@@ -57,7 +60,7 @@ const IncidentMap: React.FC = () => {
         <MapZoomControl setVisibleMarkers={setVisibleMarkers} />
 
         {visibleMarkers &&
-          incidents?.map((incident) => (
+          unresolvedIncidents?.map((incident) => (
             <Marker
               key={incident.id}
               position={[incident.latitude, incident.longitude]}
