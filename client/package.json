@@ -9,11 +9,6 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "pnpm": {
-    "overrides": {
-      "rollup": "npm:@rollup/wasm-node"
-    }
-  },
   "dependencies": {
     "@clerk/clerk-react": "^5.29.0",
     "@emotion/react": "^11.14.0",
@@ -36,7 +31,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
-    "@rollup/wasm-node": "^4.40.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",

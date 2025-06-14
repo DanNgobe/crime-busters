@@ -19,21 +19,19 @@ services:
     env_file: .env
 
   db:
-    image: mariadb:latest
+    image: postgres:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
       - ./server/backup.sql:/docker-entrypoint-initdb.d/backup.sql
     ports:
-      - "3307:3306" # Expose database on port 3306
+      - "5434:5432" # PostgreSQL default port
     healthcheck:
-      # test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 10s
       retries: 30
